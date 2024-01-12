@@ -245,13 +245,12 @@ void CuAssertMemEquals_LineMsg(CuTest* tc, const char* file, int line, const cha
         char common[len * 2 + 1];
         /*  we will build the "common" mem string
          */
-        printf("len=%d diffc = %lu\n", len, diffc);
         for (i = 0; i < diffc; ++i)
             sprintf(common + i * 2, "%02X", *(expected + i));
         /* and final message
          */
         sprintf(buf,
-                "expected <0x%s-%02X...> but was <0x%s-%02X...> (differ char %lu)\n",
+                "expected <0x%s[%02X]...> but was <0x%s[%02X]...> (differ at char %lu)\n",
                 common, *(expected + i),
                 common, *(actual + i),
                 diffc);
