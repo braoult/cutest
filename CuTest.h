@@ -73,9 +73,9 @@ void CuAssertStrEquals_LineMsg(CuTest* tc,
                                const char* expected, const char* actual);
 void CuAssertMemEquals_LineMsg(CuTest* tc,
                                const char *file, int line, const char *message,
-                               const char *expected, const char *actual, const int len);
+                               const void *expected, const void *actual, const int len);
 void CuAssertMem_LineMsg(CuTest* tc, const char* file, int line, const char* message,
-                         const char* expected, const char* actual, const int len);
+                         const void *expected, const void *actual, const int len);
 void CuAssertIntEquals_LineMsg(CuTest* tc,
                                const char* file, int line, const char* message,
                                int expected, int actual);

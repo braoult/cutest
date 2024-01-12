@@ -224,20 +224,21 @@ void CuAssertStrEquals_LineMsg(CuTest* tc, const char* file, int line, const cha
 }
 
 void CuAssertMemEquals_LineMsg(CuTest* tc, const char* file, int line, const char* message,
-                         const char* expected, const char* actual, const int len)
+                               const void *expected, const void *actual, const int len)
 {
     size_t diffc = 0;
+    const uchar *exp = expected, *act = actual;
     /* below, len*2*2 is to display twice len hex strings, 128 is for extra chars.
      * This is rather conservative.
      */
     char buf[128 + len * 2 * 2];
 
-    if (! (expected || actual))                   /* both NULL */
+    if (! (exp || act))                   /* both NULL */
         return;
-    if (! (expected && actual)) {                 /* one is null */
-        sprintf(buf, "%s pointer is null", expected ? "actual": "expected");
+    if (! (exp && act)) {                 /* one is null */
+        sprintf(buf, "<%s> pointer is null", exp ? "actual": "expected");
     } else {
-        if (!(diffc = CuMemCmp(expected, actual, len)))
+        if (!(diffc = CuMemCmp(exp, act, len)))
             return;
     }
     if (diffc--) {                                /* compare was done and wrong */
@@ -246,13 +247,13 @@ void CuAssertMemEquals_LineMsg(CuTest* tc, const char* file, int line, const cha
         /*  we will build the "common" mem string
          */
         for (i = 0; i < diffc; ++i)
-            sprintf(common + i * 2, "%02X", *(expected + i));
+            sprintf(common + i * 2, "%02X", *(exp + i));
         /* and final message
          */
         sprintf(buf,
                 "expected <0x%s[%02X]...> but was <0x%s[%02X]...> (differ at char %lu)\n",
-                common, *(expected + i),
-                common, *(actual + i),
+                common, *(exp + i),
+                common, *(act + i),
                 diffc);
     }
     CuFail_Line(tc, file, line, message, buf);
