@@ -6,40 +6,41 @@
 # Author: Asim Jalis
 # Date: 01/08/2003
 
-if test $# -eq 0 ; then FILES=*.c ; else FILES=$* ; fi
+if test $# -eq 0 ; then
+    FILES=(*.c)
+else
+    FILES=("$@") ; fi
 
-echo '
-
+cat << _EOF
 /* This is auto-generated code. Edit at your own peril. */
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "CuTest.h"
 
-'
+_EOF
 
-cat $FILES | grep '^void Test' |
+cat "${FILES[@]}" | grep '^void Test' |
     sed -e 's/(.*$//' \
         -e 's/$/(CuTest*);/' \
         -e 's/^/extern /'
 
-echo \
-    '
+cat << _EOF
 
 void RunAllTests(void)
 {
     CuString *output = CuStringNew();
     CuSuite* suite = CuSuiteNew();
 
-'
-cat $FILES | grep '^void Test' |
+_EOF
+
+cat "${FILES[@]}" | grep '^void Test' |
     sed -e 's/^void //' \
         -e 's/(.*$//' \
         -e 's/^/    SUITE_ADD_TEST(suite, /' \
         -e 's/$/);/'
 
-echo \
-    '
+cat << _EOF
     CuSuiteRun(suite);
     CuSuiteSummary(suite, output);
     CuSuiteDetails(suite, output);
@@ -52,4 +53,4 @@ int main(void)
 {
     RunAllTests();
 }
-'
+_EOF
