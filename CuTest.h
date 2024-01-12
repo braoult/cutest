@@ -3,6 +3,17 @@
 
 #include <setjmp.h>
 #include <stdarg.h>
+#include <string.h>
+
+#ifndef u32
+#define u32 unsigned int
+#endif
+#ifndef u4
+#define u64 unsigned long long int
+#endif
+#ifndef uchar
+#define uchar unsigned char
+#endif
 
 /* CuString */
 
@@ -31,6 +42,7 @@ void CuStringAppendFormat(CuString* str, const char* format, ...);
 void CuStringInsert(CuString* str, const char* text, int pos);
 void CuStringResize(CuString* str, int newSize);
 void CuStringDelete(CuString* str);
+size_t CuMemCmp(const void *m1, const void *m2, size_t n);
 
 /* CuTest */
 
@@ -59,9 +71,20 @@ void CuAssert_Line(CuTest* tc, const char* file, int line, const char* message, 
 void CuAssertStrEquals_LineMsg(CuTest* tc,
                                const char* file, int line, const char* message,
                                const char* expected, const char* actual);
+void CuAssertMemEquals_LineMsg(CuTest* tc,
+                               const char *file, int line, const char *message,
+                               const char *expected, const char *actual, const int len);
+void CuAssertMem_LineMsg(CuTest* tc, const char* file, int line, const char* message,
+                         const char* expected, const char* actual, const int len);
 void CuAssertIntEquals_LineMsg(CuTest* tc,
                                const char* file, int line, const char* message,
                                int expected, int actual);
+void CuAssertU32Equals_LineMsg(CuTest* tc,
+                               const char* file, int line, const char* message,
+                               u32 expected, u32 actual);
+void CuAssertU64Equals_LineMsg(CuTest* tc,
+                               const char* file, int line, const char* message,
+                               u64 expected, u64 actual);
 void CuAssertDblEquals_LineMsg(CuTest* tc,
                                const char* file, int line, const char* message,
                                double expected, double actual, double delta);
@@ -77,8 +100,19 @@ void CuAssertPtrEquals_LineMsg(CuTest* tc,
 
 #define CuAssertStrEquals(tc,ex,ac)           CuAssertStrEquals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac))
 #define CuAssertStrEquals_Msg(tc,ms,ex,ac)    CuAssertStrEquals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac))
+
+#define CuAssertMemEquals(tc,ex,ac,l)         CuAssertMemEquals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac),(l))
+#define CuAssertMemEquals_Msg(tc,ms,ex,ac,l)  CuAssertMemEquals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac),(l))
+
 #define CuAssertIntEquals(tc,ex,ac)           CuAssertIntEquals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac))
 #define CuAssertIntEquals_Msg(tc,ms,ex,ac)    CuAssertIntEquals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac))
+
+#define CuAssertU32Equals(tc,ex,ac)           CuAssertU32Equals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac))
+#define CuAssertU32Equals_msg(tc,ms,ex,ac)    CuAssertU32Equals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac))
+
+#define CuAssertU64Equals(tc,ex,ac)           CuAssertU64Equals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac))
+#define CuAssertU64Equals_msg(tc,ms,ex,ac)    CuAssertU64Equals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac))
+
 #define CuAssertDblEquals(tc,ex,ac,dl)        CuAssertDblEquals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac),(dl))
 #define CuAssertDblEquals_Msg(tc,ms,ex,ac,dl) CuAssertDblEquals_LineMsg((tc),__FILE__,__LINE__,(ms),(ex),(ac),(dl))
 #define CuAssertPtrEquals(tc,ex,ac)           CuAssertPtrEquals_LineMsg((tc),__FILE__,__LINE__,NULL,(ex),(ac))

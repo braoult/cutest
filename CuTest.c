@@ -105,6 +105,27 @@ void CuStringInsert(CuString* str, const char* text, int pos)
     memcpy(str->buffer + pos, text, length);
 }
 
+/**
+ * CuMemCmp - compare memory areas
+ * @m1, @m2: memory addresses to test
+ * @n: number of bytes to test
+ *
+ * m1 and m2 must ne non NULL.
+ *
+ * @Return: unsigned integer:
+ *    0 if equal
+ *    (1 + pos) if *(m1 + pos) and *(m2 + pos) differ.
+ */
+size_t CuMemCmp(const void *m1, const void *m2, size_t n)
+{
+    uchar *p1 = (uchar *) m1, *p2 = (uchar *) m2, *start = p1;
+    for (; n; --n) {
+        if (*p1++ != *p2++)
+            return p1 - start;
+    }
+    return 0;
+}
+
 /*-------------------------------------------------------------------------*
  * CuTest
  *-------------------------------------------------------------------------*/
@@ -202,6 +223,42 @@ void CuAssertStrEquals_LineMsg(CuTest* tc, const char* file, int line, const cha
     CuFailInternal(tc, file, line, &string);
 }
 
+void CuAssertMemEquals_LineMsg(CuTest* tc, const char* file, int line, const char* message,
+                         const char* expected, const char* actual, const int len)
+{
+    size_t diffc = 0;
+    /* below, len*2*2 is to display twice len hex strings, 128 is for extra chars.
+     * This is rather conservative.
+     */
+    char buf[128 + len * 2 * 2];
+
+    if (! (expected || actual))                   /* both NULL */
+        return;
+    if (! (expected && actual)) {                 /* one is null */
+        sprintf(buf, "%s pointer is null", expected ? "actual": "expected");
+    } else {
+        if (!(diffc = CuMemCmp(expected, actual, len)))
+            return;
+    }
+    if (diffc--) {                                /* compare was done and wrong */
+        size_t i;
+        char common[len * 2 + 1];
+        /*  we will build the "common" mem string
+         */
+        printf("len=%d diffc = %lu\n", len, diffc);
+        for (i = 0; i < diffc; ++i)
+            sprintf(common + i * 2, "%02X", *(expected + i));
+        /* and final message
+         */
+        sprintf(buf,
+                "expected <0x%s-%02X...> but was <0x%s-%02X...> (differ char %lu)\n",
+                common, *(expected + i),
+                common, *(actual + i),
+                diffc);
+    }
+    CuFail_Line(tc, file, line, message, buf);
+}
+
 void CuAssertIntEquals_LineMsg(CuTest* tc, const char* file, int line, const char* message,
                                int expected, int actual)
 {
@@ -211,12 +268,31 @@ void CuAssertIntEquals_LineMsg(CuTest* tc, const char* file, int line, const cha
     CuFail_Line(tc, file, line, message, buf);
 }
 
+void CuAssertU32Equals_LineMsg(CuTest* tc, const char* file, int line,
+                               const char* message,
+                               u32 expected, u32 actual)
+{
+    char buf[STRING_MAX];
+    if (expected == actual) return;
+    sprintf(buf, "expected <%#010x> but was <%#010x>", expected, actual);
+    CuFail_Line(tc, file, line, message, buf);
+}
+
+void CuAssertU64Equals_LineMsg(CuTest* tc, const char* file, int line,
+                               const char* message,
+                               u64 expected, u64 actual)
+{
+    char buf[STRING_MAX];
+    if (expected == actual) return;
+    sprintf(buf, "expected <%#016llx> but was <%#016llx>", expected, actual);
+    CuFail_Line(tc, file, line, message, buf);
+}
+
 void CuAssertDblEquals_LineMsg(CuTest* tc, const char* file, int line, const char* message,
                                double expected, double actual, double delta)
 {
     char buf[STRING_MAX];
     if (fabs(expected - actual) <= delta) return;
-/*	sprintf(buf, "expected <%lf> but was <%lf>", expected, actual); */
     sprintf(buf, "expected <%f> but was <%f>", expected, actual);
 
     CuFail_Line(tc, file, line, message, buf);
